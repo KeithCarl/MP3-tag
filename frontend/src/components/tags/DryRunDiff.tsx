@@ -5,7 +5,7 @@ interface DryRunDiffProps {
 }
 
 export function DryRunDiff({ diffs }: DryRunDiffProps) {
-  const allChanges = diffs.flatMap((d) => d.changes.map((c) => ({ ...c, filename: d.filename })));
+  const allChanges = diffs.flatMap((d) => (d.diff ?? []).map((c) => ({ ...c, filename: d.filename })));
   if (allChanges.length === 0) {
     return <p className="text-gray-400 text-sm py-4 text-center">No changes to apply.</p>;
   }

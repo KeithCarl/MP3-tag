@@ -18,5 +18,5 @@ export interface TagDiffField {
 export interface TagDiffResult {
   file_id: string;
   filename: string;
-  changes: TagDiffField[];
+  diff: TagDiffField[];
 }

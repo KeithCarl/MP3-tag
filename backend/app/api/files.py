@@ -1,4 +1,9 @@
+import asyncio
+import json
+import os
+
 from fastapi import APIRouter, Query, HTTPException
+from fastapi.responses import StreamingResponse
 from pathlib import Path
 
 from app.config import settings
@@ -21,6 +26,57 @@ async def get_folder_tree(
     """Return immediate subdirectories with MP3 counts."""
     nodes = scanner.list_subdirs(path, depth)
     return FolderTreeResponse(nodes=nodes)
+
+
+@router.post("/scan-stream")
+async def scan_files_stream(request: ScanRequest):
+    """Stream scan progress as Server-Sent Events. Each event is a JSON line."""
+    max_files = request.limit or settings.max_scan_files
+    loop = asyncio.get_event_loop()
+
+    async def generate():
+        scanned = 0
+        capped = False
+
+        for base_path in request.paths:
+            try:
+                validated = validate_path(base_path)
+            except Exception:
+                continue
+
+            base_str = str(validated)
+            base_depth = base_str.rstrip(os.sep).count(os.sep)
+
+            for root, dirs, files in os.walk(base_str):
+                current_depth = root.rstrip(os.sep).count(os.sep) - base_depth
+                if current_depth >= settings.max_scan_depth:
+                    dirs.clear()
+                    continue
+                dirs.sort()
+
+                for fname in sorted(files):
+                    if not fname.lower().endswith(".mp3"):
+                        continue
+                    if scanned >= max_files:
+                        capped = True
+                        yield f"data: {json.dumps({'type': 'done', 'total': scanned, 'capped': True})}\n\n"
+                        return
+
+                    fpath = os.path.join(root, fname)
+                    try:
+                        info = await loop.run_in_executor(None, scanner._build_file_info, fpath)
+                        scanned += 1
+                        yield f"data: {json.dumps({'type': 'file', 'scanned': scanned, 'file': info.model_dump()})}\n\n"
+                    except Exception:
+                        continue
+
+        yield f"data: {json.dumps({'type': 'done', 'total': scanned, 'capped': capped})}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post("/scan", response_model=FileInfoResponse)
