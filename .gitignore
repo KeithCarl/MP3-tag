@@ -14,3 +14,6 @@ frontend/.env
 # OS
 .DS_Store
 *.bak
+
+# Temporary export (earring-designer has its own repo)
+earring-designer/
