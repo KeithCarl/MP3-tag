@@ -9,6 +9,11 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (r) => r,
   (err) => {
+    if (!err.response) {
+      return Promise.reject(
+        new Error(`Cannot connect to backend at ${BASE_URL}. Is the server running?`),
+      );
+    }
     const msg = err.response?.data?.detail ?? err.message ?? 'Unknown error';
     return Promise.reject(new Error(String(msg)));
   }

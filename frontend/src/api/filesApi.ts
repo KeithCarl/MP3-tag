@@ -12,12 +12,20 @@ export async function scanStream(
   onEvent: (e: ScanEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
-  const resp = await fetch(`${BASE_URL}/api/v1/files/scan-stream`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ paths }),
-    signal,
-  });
+  let resp: Response;
+  try {
+    resp = await fetch(`${BASE_URL}/api/v1/files/scan-stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths }),
+      signal,
+    });
+  } catch (e) {
+    if (e instanceof TypeError && (e.message.includes('fetch') || e.message.includes('network'))) {
+      throw new Error(`Cannot connect to backend at ${BASE_URL}. Is the server running?`);
+    }
+    throw e;
+  }
   if (!resp.ok) throw new Error(`Scan failed: ${resp.status}`);
   const reader = resp.body!.getReader();
   const decoder = new TextDecoder();
