@@ -20,7 +20,7 @@ export function TagEditor() {
   const file = files.find((f) => f.file_id === fileId);
 
   const [tags, setTags] = useState<TagData>(file?.tags ?? {});
-  const [version, setVersion] = useState<ID3VersionOption>('id3v2.3');
+  const [version, setVersion] = useState<ID3VersionOption>('id3v2.4');
   const [backup, setBackup] = useState(true);
   const [diff, setDiff] = useState<TagDiffResult[] | null>(null);
   const [loading, setLoading] = useState(false);

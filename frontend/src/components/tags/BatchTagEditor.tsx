@@ -25,10 +25,11 @@ export function BatchTagEditor() {
   const { setPanel, addToast } = useUIStore();
   const fileIds = [...selectedIds];
   const [tags, setTags] = useState<TagData>({});
-  const [version, setVersion] = useState<ID3VersionOption>('id3v2.3');
+  const [version, setVersion] = useState<ID3VersionOption>('id3v2.4');
   const [backup, setBackup] = useState(true);
   const [diff, setDiff] = useState<TagDiffResult[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const setTag = (field: keyof TagData) => (v: string) => setTags((t) => ({ ...t, [field]: v }));
 
@@ -44,18 +45,36 @@ export function BatchTagEditor() {
 
   const handleApply = async () => {
     setLoading(true);
+    setProgress({ done: 0, total: fileIds.length });
+    const cleaned = cleanTags(tags);
+    let failed = 0;
     try {
-      await tagsApi.batchWrite({ file_ids: fileIds, tags: cleanTags(tags), id3_version: version, backup });
-      // Re-scan to refresh file list
+      for (let i = 0; i < fileIds.length; i++) {
+        try {
+          await tagsApi.writeTags(fileIds[i], { tags: cleaned, id3_version: version, dry_run: false, backup });
+        } catch {
+          failed++;
+        }
+        setProgress({ done: i + 1, total: fileIds.length });
+      }
       if (scannedPaths.length > 0) {
         const fresh = await filesApi.scan(scannedPaths);
         setFiles(fresh.files, scannedPaths, fresh.capped);
       }
-      addToast(`Tags applied to ${fileIds.length} file${fileIds.length !== 1 ? 's' : ''}!`, 'success');
+      const ok = fileIds.length - failed;
+      addToast(
+        failed > 0
+          ? `Applied to ${ok} file${ok !== 1 ? 's' : ''}, ${failed} failed.`
+          : `Tags applied to ${ok} file${ok !== 1 ? 's' : ''}!`,
+        failed > 0 ? 'error' : 'success',
+      );
       setPanel(null);
     } catch (e) {
       addToast(e instanceof Error ? e.message : 'Apply failed', 'error');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+      setProgress(null);
+    }
   };
 
   return (
@@ -77,13 +96,27 @@ export function BatchTagEditor() {
       {version !== 'id3v1.1' && <LyricsEditor value={tags.lyrics ?? ''} onChange={setTag('lyrics')} placeholder="Leave blank to skip" />}
       <ID3VersionSelector value={version} onChange={setVersion} />
       {diff && <DryRunDiff diffs={diff} />}
+      {progress && (
+        <div className="flex flex-col gap-1">
+          <div className="flex justify-between text-xs text-gray-400">
+            <span>Writing tags…</span>
+            <span>{progress.done} / {progress.total}</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-blue-500 h-2 rounded-full transition-all duration-150"
+              style={{ width: `${(progress.done / progress.total) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
           <input type="checkbox" checked={backup} onChange={(e) => setBackup(e.target.checked)} className="accent-blue-500" />
           Backup originals (.bak)
         </label>
         <div className="flex gap-2">
-          {loading && <LoadingSpinner size="sm" />}
+          {loading && !progress && <LoadingSpinner size="sm" />}
           <button onClick={handlePreview} disabled={loading} className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-gray-200 rounded text-sm disabled:opacity-50">Preview</button>
           {diff && <button onClick={handleApply} disabled={loading} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium disabled:opacity-50">Apply to {fileIds.length} Files</button>}
         </div>

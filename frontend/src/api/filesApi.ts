@@ -48,5 +48,5 @@ export const filesApi = {
     apiClient.get(`/files/${fileId}/tags`).then((r) => r.data),
 
   getInfo: (fileId: string): Promise<MP3FileInfo> =>
-    apiClient.get(`/files/${fileId}/info`).then((r) => r.data),
+    apiClient.get(`/files/${fileId}/tags`).then((r) => r.data),
 };

@@ -1,0 +1,17 @@
+[Unit]
+Description=MP3 Tag Editor - Frontend
+After=network-online.target mp3tag-backend.service
+Wants=mp3tag-backend.service
+
+[Service]
+Type=simple
+User=kenneth
+WorkingDirectory=/home/kenneth/mp3-tag-editor/frontend
+ExecStart=/usr/bin/npm run dev -- --host 0.0.0.0
+Restart=on-failure
+RestartSec=5
+
+Environment=VITE_API_BASE_URL=http://localhost:8000
+
+[Install]
+WantedBy=multi-user.target

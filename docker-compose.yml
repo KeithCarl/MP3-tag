@@ -5,7 +5,7 @@ services:
       - "8000:8000"
     environment:
       - ALLOWED_ROOT=/music
-      - CORS_ORIGINS=["http://localhost:5173","http://localhost:4173"]
+      - CORS_ORIGINS=["http://localhost:5173","http://localhost:4173","http://192.168.1.150:5173","http://192.168.1.150:4173"]
       - MUSICBRAINZ_USER_AGENT=MP3TagEditor/1.0 (admin@example.com)
     volumes:
       - ${MUSIC_DIR:-/tmp/music}:/music
