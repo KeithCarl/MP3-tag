@@ -23,6 +23,7 @@ class TagData(BaseModel):
 class MP3FileInfo(BaseModel):
     file_id: str
     filename: str
+    path: str = ""
     size_bytes: int
     duration_seconds: float
     bitrate_kbps: int

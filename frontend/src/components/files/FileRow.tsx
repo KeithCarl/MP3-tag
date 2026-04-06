@@ -43,9 +43,12 @@ export function FileRow({ file, selected, onToggle }: FileRowProps) {
       <td className="px-3 py-2 text-sm text-gray-200 max-w-xs truncate">{file.filename}</td>
       <td className="px-3 py-2 text-sm text-gray-300 max-w-xs truncate">{file.tags.title ?? ''}</td>
       <td className="px-3 py-2 text-sm text-gray-300 max-w-xs truncate">{file.tags.artist ?? ''}</td>
+      <td className="px-3 py-2 text-sm text-gray-300 max-w-xs truncate">{file.tags.album ?? ''}</td>
+      <td className="px-3 py-2 text-sm text-gray-300 max-w-xs truncate">{file.tags.genre ?? ''}</td>
       <td className="px-3 py-2 text-sm text-gray-300">{file.tags.year ?? ''}</td>
       <td className="px-3 py-2"><ID3Badge version={file.id3_version} /></td>
       <td className="px-3 py-2 text-sm text-gray-400">{formatDuration(file.duration_seconds)}</td>
+      <td className="px-3 py-2 text-sm text-gray-500 max-w-xs truncate">{file.path ?? ''}</td>
     </tr>
   );
 }

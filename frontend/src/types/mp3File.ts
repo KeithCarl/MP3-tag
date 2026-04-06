@@ -14,6 +14,7 @@ export interface TagData {
 export interface MP3FileInfo {
   file_id: string;
   filename: string;
+  path: string;
   size_bytes: number;
   duration_seconds: number;
   bitrate_kbps: number;

@@ -79,9 +79,16 @@ def _build_file_info(fpath: str) -> MP3FileInfo:
         tag_data = TagData()
         id3_ver = ID3Version.NONE
 
+    allowed_root = Path(settings.allowed_root).resolve()
+    try:
+        rel_dir = str(Path(fpath).parent.relative_to(allowed_root))
+    except ValueError:
+        rel_dir = str(Path(fpath).parent)
+
     return MP3FileInfo(
         file_id=file_id,
         filename=os.path.basename(fpath),
+        path=rel_dir,
         size_bytes=size_bytes,
         duration_seconds=round(duration, 2),
         bitrate_kbps=bitrate,

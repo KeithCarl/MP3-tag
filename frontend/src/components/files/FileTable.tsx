@@ -3,7 +3,7 @@ import { useFileStore } from '../../store/fileStore';
 import { FileRow } from './FileRow';
 import { ArrowUpDown } from 'lucide-react';
 
-type SortField = 'filename' | 'title' | 'artist' | 'year' | 'id3_version' | 'duration_seconds';
+type SortField = 'filename' | 'title' | 'artist' | 'album' | 'genre' | 'year' | 'id3_version' | 'duration_seconds' | 'path';
 type SortDir = 'asc' | 'desc';
 
 export function FileTable() {
@@ -22,7 +22,10 @@ export function FileTable() {
     if (sortField === 'filename') { av = a.filename; bv = b.filename; }
     else if (sortField === 'title') { av = a.tags.title ?? ''; bv = b.tags.title ?? ''; }
     else if (sortField === 'artist') { av = a.tags.artist ?? ''; bv = b.tags.artist ?? ''; }
+    else if (sortField === 'album') { av = a.tags.album ?? ''; bv = b.tags.album ?? ''; }
+    else if (sortField === 'genre') { av = a.tags.genre ?? ''; bv = b.tags.genre ?? ''; }
     else if (sortField === 'year') { av = a.tags.year ?? ''; bv = b.tags.year ?? ''; }
+    else if (sortField === 'path') { av = a.path ?? ''; bv = b.path ?? ''; }
     else if (sortField === 'id3_version') { av = a.id3_version; bv = b.id3_version; }
     else if (sortField === 'duration_seconds') { av = String(a.duration_seconds); bv = String(b.duration_seconds); }
     return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
@@ -70,9 +73,12 @@ export function FileTable() {
             <SortHeader field="filename" label="Filename" />
             <SortHeader field="title" label="Title" />
             <SortHeader field="artist" label="Artist" />
+            <SortHeader field="album" label="Album" />
+            <SortHeader field="genre" label="Genre" />
             <SortHeader field="year" label="Year" />
             <SortHeader field="id3_version" label="ID3" />
             <SortHeader field="duration_seconds" label="Duration" />
+            <SortHeader field="path" label="Path" />
           </tr>
         </thead>
         <tbody>
