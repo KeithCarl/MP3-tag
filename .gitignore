@@ -15,5 +15,6 @@ frontend/.env
 .DS_Store
 *.bak
 
-# Temporary export (earring-designer has its own repo)
-earring-designer/
+# earring-designer app (subdirectory)
+earring-designer/node_modules/
+earring-designer/dist/
